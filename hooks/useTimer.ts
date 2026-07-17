@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from 'react';
 import { useTimerStore } from '../stores/timerStore';
 import { useTaskStore } from '../stores/taskStore';
 import { useStatsStore } from '../stores/statsStore';
+import { useAchievementsStore } from '../stores/achievementsStore';
 import { SESSION_TYPES, SessionType } from '../constants/timer';
 import * as Haptics from 'expo-haptics';
 import { scheduleTimerCompleteNotification, cancelAllNotifications } from '../utils/notifications';
@@ -13,7 +14,8 @@ export const useTimer = (onComplete?: (mode: SessionType) => void) => {
     incrementSessionCount, incrementCompletedSessions, resetCompletedSessions,
   } = useTimerStore();
   const { activeTaskId, incrementPomodoro } = useTaskStore();
-  const { addSession } = useStatsStore();
+  const { addSession, getTodayFocusSec, getStreak, sessions } = useStatsStore();
+  const { checkAndUnlock } = useAchievementsStore();
 
   // Tick every second — use endTimestamp for accuracy
   useEffect(() => {
@@ -53,6 +55,12 @@ export const useTimer = (onComplete?: (mode: SessionType) => void) => {
       incrementSessionCount();
       incrementCompletedSessions();
       if (activeTaskId) incrementPomodoro(activeTaskId);
+      // Check achievements
+      const totalPomodoros = sessions.filter((s) => s.type === 'focus').length + 1;
+      const streak = getStreak();
+      const todaySec = getTodayFocusSec() + settings.focusMin * 60;
+      const sessionHour = new Date().getHours();
+      await checkAndUnlock({ totalPomodoros, streak, todaySec, sessionHour });
       const newCount = completedSessions + 1;
       const nextMode = newCount % settings.sessionsBeforeLongBreak === 0
         ? SESSION_TYPES.LONG_BREAK
