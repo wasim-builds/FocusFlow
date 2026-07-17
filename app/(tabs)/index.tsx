@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, useColorScheme, SafeAreaView,
-  ScrollView, Dimensions,
+  ScrollView, Dimensions, Animated,
 } from 'react-native';
 import { CircularProgress } from '../../components/CircularProgress';
 import { SessionTypeToggle } from '../../components/SessionTypeToggle';
@@ -13,9 +13,6 @@ import { useStatsStore } from '../../stores/statsStore';
 import { formatTime } from '../../utils/time';
 import { Colors } from '../../constants/colors';
 import { SESSION_TYPES, SessionType } from '../../constants/timer';
-import Animated, {
-  useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming,
-} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 const RING_SIZE = Math.min(width * 0.72, 300);
@@ -35,16 +32,16 @@ export default function TimerScreen() {
   const { loadSessions } = useStatsStore();
   const { loadSettings, loadTasks } = { loadSettings: useTimerStore(s => s.loadSettings), loadTasks: useTaskStore(s => s.loadTasks) };
 
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const scale = useRef(new Animated.Value(1)).current;
+  const animatedStyle = { transform: [{ scale }] };
 
   const { timeLeft, isRunning, mode, progress, startTimer, pauseTimer, resetTimer, skipSession } =
     useTimer((completedMode) => {
       if (completedMode === SESSION_TYPES.FOCUS) {
-        scale.value = withSequence(
-          withSpring(1.05),
-          withTiming(1, { duration: 300 })
-        );
+        Animated.sequence([
+          Animated.timing(scale, { toValue: 1.05, duration: 150, useNativeDriver: true }),
+          Animated.timing(scale, { toValue: 1, duration: 300, useNativeDriver: true }),
+        ]).start();
       }
     });
 

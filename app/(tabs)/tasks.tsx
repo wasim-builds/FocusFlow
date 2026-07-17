@@ -7,7 +7,6 @@ import { useTaskStore, Task } from '../../stores/taskStore';
 import { useTimerStore } from '../../stores/timerStore';
 import { Colors } from '../../constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 
 const TaskItem: React.FC<{
   task: Task;
@@ -20,7 +19,7 @@ const TaskItem: React.FC<{
   const theme = isDark ? Colors.dark : Colors.light;
 
   return (
-    <Animated.View entering={FadeInDown} exiting={FadeOutLeft}>
+    <View>
       <TouchableOpacity
         onLongPress={onDelete}
         onPress={onSetActive}
@@ -75,7 +74,7 @@ const TaskItem: React.FC<{
           <View style={[styles.activeDot, { backgroundColor: Colors.focus.primary }]} />
         )}
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 
