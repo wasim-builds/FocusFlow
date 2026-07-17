@@ -1,14 +1,20 @@
 import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { useTimerStore } from '../../stores/timerStore';
+import { useEffect } from 'react';
+import { requestNotificationPermission } from '../../utils/notifications';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { settings } = useTimerStore();
   const isDark = settings.darkMode !== null ? settings.darkMode : colorScheme === 'dark';
   const theme = isDark ? Colors.dark : Colors.light;
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   return (
     <Tabs
@@ -19,14 +25,15 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: theme.tabBar,
           borderTopColor: theme.border,
-          borderTopWidth: 1,
-          paddingTop: 6,
-          height: 60,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          paddingTop: 8,
+          height: 64,
+          paddingBottom: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
-          marginBottom: 4,
+          marginTop: 2,
         },
       }}
     >
@@ -34,8 +41,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Timer',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="timer-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={focused ? styles.activeIcon : null}>
+              <Ionicons name={focused ? 'timer' : 'timer-outline'} size={size} color={color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="stopwatch"
+        options={{
+          title: 'Stopwatch',
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={focused ? styles.activeIcon : null}>
+              <Ionicons name={focused ? 'stopwatch' : 'stopwatch-outline'} size={size} color={color} />
+            </View>
           ),
         }}
       />
@@ -43,8 +63,10 @@ export default function TabLayout() {
         name="tasks"
         options={{
           title: 'Tasks',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="checkmark-circle-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={focused ? styles.activeIcon : null}>
+              <Ionicons name={focused ? 'checkmark-circle' : 'checkmark-circle-outline'} size={size} color={color} />
+            </View>
           ),
         }}
       />
@@ -52,8 +74,10 @@ export default function TabLayout() {
         name="stats"
         options={{
           title: 'Stats',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={focused ? styles.activeIcon : null}>
+              <Ionicons name={focused ? 'bar-chart' : 'bar-chart-outline'} size={size} color={color} />
+            </View>
           ),
         }}
       />
@@ -61,11 +85,21 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={focused ? styles.activeIcon : null}>
+              <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={color} />
+            </View>
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  activeIcon: {
+    backgroundColor: Colors.focus.primary + '18',
+    borderRadius: 10,
+    padding: 4,
+  },
+});

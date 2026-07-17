@@ -4,6 +4,7 @@ import { useTaskStore } from '../stores/taskStore';
 import { useStatsStore } from '../stores/statsStore';
 import { SESSION_TYPES, SessionType } from '../constants/timer';
 import * as Haptics from 'expo-haptics';
+import { scheduleTimerCompleteNotification, cancelAllNotifications } from '../utils/notifications';
 
 export const useTimer = (onComplete?: (mode: SessionType) => void) => {
   const {
@@ -86,16 +87,20 @@ export const useTimer = (onComplete?: (mode: SessionType) => void) => {
     if (overrideMode) setMode(overrideMode);
     setEndTimestamp(ts);
     setIsRunning(true);
+    // Schedule push notification for when timer ends
+    scheduleTimerCompleteNotification(targetMode, duration);
   };
 
   const pauseTimer = () => {
     setIsRunning(false);
     setEndTimestamp(null);
+    cancelAllNotifications();
   };
 
   const resetTimer = () => {
     setIsRunning(false);
     setEndTimestamp(null);
+    cancelAllNotifications();
     const durations: Record<SessionType, number> = {
       [SESSION_TYPES.FOCUS]: settings.focusMin * 60,
       [SESSION_TYPES.SHORT_BREAK]: settings.shortBreakMin * 60,
